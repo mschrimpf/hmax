@@ -78,6 +78,8 @@ class PytorchWrapper:
 
     @classmethod
     def set_weights(cls, output, shape):
+        if len(shape) == 5:
+            return torch.cat([out[:shape[0],None, :shape[1], :shape[2], :shape[3], :shape[4]] for out in output], 1)
         if len(shape) == 4:
             return torch.cat([out[:shape[0],None, :shape[1], :shape[2], :shape[3]] for out in output], 1)
         elif len(shape) == 3:
@@ -86,6 +88,8 @@ class PytorchWrapper:
             return torch.cat([out[:shape[0],None ,:shape[1]] for out in output], 1)
         elif len(shape) == 1:
             return torch.cat([out[:shape[0], None] for out in output], 1)
+        else:
+            raise ValueError(f"Unexpected shape {shape}")
 
     @classmethod
     def _tensor_to_numpy(cls, output):
@@ -105,12 +109,18 @@ class PytorchWrapper:
                     outer = output[i]
                     new_weights.append(cls.set_weights(outer, shape))
                 new_weights = cls.set_weights(new_weights, new_weights[0].shape)
-                if len(new_weights.shape) > 4:
+                if len(new_weights.shape) == 6:
+                    new_weights = new_weights.reshape(new_weights.shape[0],new_weights.shape[1]*new_weights.shape[2]*new_weights.shape[3],new_weights.shape[4],new_weights.shape[5])
+                elif len(new_weights.shape) == 5:
                     new_weights = new_weights.reshape(new_weights.shape[0],new_weights.shape[1]*new_weights.shape[2],new_weights.shape[3],new_weights.shape[4])
-                if len(new_weights.shape) == 3:
+                elif len(new_weights.shape) == 4:
+                    pass  # ok already
+                elif len(new_weights.shape) == 3:
                     new_weights = new_weights.reshape(new_weights.shape[0],1,new_weights.shape[1],new_weights.shape[2])
-                if len(new_weights.shape) == 2:
+                elif len(new_weights.shape) == 2:
                     new_weights = new_weights.reshape(new_weights.shape[0],1,1,new_weights.shape[1])
+                else:
+                    raise ValueError(f"Unexpected shape {new_weights.shape}")
                 return new_weights
             else:
                 length = len(zero.shape)
