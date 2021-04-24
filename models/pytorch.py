@@ -2,6 +2,7 @@ import logging
 from collections import OrderedDict
 
 import numpy as np
+import os
 import torch
 from PIL import Image
 
@@ -37,8 +38,12 @@ class PytorchWrapper:
     def identifier(self, value):
         self._extractor.identifier = value
 
-    def __call__(self, *args, **kwargs):  # cannot assign __call__ as attribute due to Python convention
-        return self._extractor(*args, **kwargs)
+    def __call__(self, *args, **kwargs):
+        previous_value = os.getenv('RESULTCACHING_DISABLE')
+        os.environ['RESULTCACHING_DISABLE'] = 'model_tools.activations'
+        result = self._extractor(*args, **kwargs)
+        os.environ['RESULTCACHING_DISABLE'] = previous_value
+        return result
 
     def get_activations(self, images, layer_names):
         import torch

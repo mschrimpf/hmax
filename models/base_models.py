@@ -12,7 +12,6 @@ Module for hmax submission to brain-score
 
 
 def get_model_list():
-    # return ['hmax' , 'hmax_s2']
     return ['hmax']
 
 
