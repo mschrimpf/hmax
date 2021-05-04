@@ -39,7 +39,7 @@ class PytorchWrapper:
         self._extractor.identifier = value
 
     def __call__(self, *args, **kwargs):
-        previous_value = os.getenv('RESULTCACHING_DISABLE')
+        previous_value = os.getenv('RESULTCACHING_DISABLE', '')
         os.environ['RESULTCACHING_DISABLE'] = 'model_tools.activations'
         result = self._extractor(*args, **kwargs)
         os.environ['RESULTCACHING_DISABLE'] = previous_value
